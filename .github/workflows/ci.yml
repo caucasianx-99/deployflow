@@ -1,0 +1,39 @@
+name: DeployFlow CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run automated tests
+        run: python -m pytest -q
+
+      - name: Build Docker image
+        run: docker build -t deployflow:ci .
+
+      - name: Start and check container
+        run: |
+          docker run -d --rm --name deployflow-ci -p 8000:8000 deployflow:ci
+          curl --fail --silent --show-error \
+            --retry 10 \
+            --retry-connrefused \
+            --retry-delay 2 \
+            http://localhost:8000/health
+          docker stop deployflow-ci
