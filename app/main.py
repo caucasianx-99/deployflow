@@ -3,7 +3,7 @@ from fastapi import FastAPI
 app = FastAPI(
     title="DeployFlow",
     description="A small service for demonstrating deployment and DevOps",
-    version="1.0.0",
+    version="1.0.1",
 )
 
 
